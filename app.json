@@ -1,29 +1,49 @@
 {
   "expo": {
-    "name": "VegeCoop",
-    "slug": "VegeCoop",
+    "name": "Vege Coop",
+    "slug": "vege-coop",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#121212"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": false,
+      "bundleIdentifier": "com.vegecoop.app",
+      "infoPlist": {
+        "NSSpeechRecognitionUsageDescription": "Vege Coop uses speech recognition so you can add items hands-free while shopping.",
+        "NSMicrophoneUsageDescription": "Vege Coop needs microphone access for voice commands while shopping.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#121212"
       },
-      "edgeToEdgeEnabled": true
+      "permissions": [
+        "RECORD_AUDIO",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
+    "plugins": [
+      [
+        "@react-native-voice/voice",
+        {
+          "microphonePermission": "Vege Coop needs microphone access for voice commands.",
+          "speechRecognitionPermission": "Vege Coop uses speech recognition for hands-free shopping."
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "118f675b-e6e1-4fe4-b739-983db9629520"
+      }
     }
   }
 }
