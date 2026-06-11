@@ -1,4 +1,4 @@
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 
 const typeIcon = (type) => {
     if (type === 'vegetable') return '🥦';
@@ -7,6 +7,17 @@ const typeIcon = (type) => {
 };
 
 export default function ShoppingList({ items, onDelete }) {
+    const confirmDelete = (item) => {
+        Alert.alert(
+            'Remove item?',
+            `${item.name} — $${item.cost.toFixed(2)}`,
+            [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Delete', style: 'destructive', onPress: () => onDelete(item.name) },
+            ]
+        );
+    };
+
     if (items.length === 0) {
         return (
             <View style={styles.empty}>
@@ -21,7 +32,7 @@ export default function ShoppingList({ items, onDelete }) {
             keyExtractor={(item) => item.id.toString()}
             contentContainerStyle={styles.list}
             renderItem={({ item }) => (
-                <TouchableOpacity style={styles.row} onPress={() => onDelete(item.name)} activeOpacity={0.6}>
+                <TouchableOpacity style={styles.row} onPress={() => confirmDelete(item)} activeOpacity={0.6}>
                     <View style={styles.deleteCircle} />
                     <Text style={styles.name}>{item.name}</Text>
                     <View style={styles.right}>
