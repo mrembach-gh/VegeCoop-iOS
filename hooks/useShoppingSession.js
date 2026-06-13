@@ -2,12 +2,13 @@ import { useState, useEffect, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabaseClient';
 
-const INITIAL_KITTY = 320;
+// Fallbacks if the Config table is missing or unreachable
+const DEFAULT_CONFIG = { initial_kitty: 320, trolley_cost: 5, parking_cost: 2 };
 const SHOP_ID_KEY = 'vege_shop_id';
 
 export function useShoppingSession() {
     const [items, setItems] = useState([]);
-    const [kitty, setKitty] = useState(INITIAL_KITTY);
+    const [kitty, setKitty] = useState(DEFAULT_CONFIG.initial_kitty);
     const [counts, setCounts] = useState({ vegetable: 0, fruit: 0, other: 0 });
     const [shopId, setShopId] = useState(null);
     const [people, setPeople] = useState([]);
@@ -15,6 +16,21 @@ export function useShoppingSession() {
     const [isInitialized, setIsInitialized] = useState(false);
 
     const shopIdRef = useRef(null);
+    const configRef = useRef(DEFAULT_CONFIG);
+
+    // Load config (kitty, trolley/parking costs) from the Config table
+    useEffect(() => {
+        const loadConfig = async () => {
+            const { data } = await supabase.from('Config').select('ConfigKey, ConfigValue');
+            if (data && data.length > 0) {
+                const cfg = { ...DEFAULT_CONFIG };
+                data.forEach(row => { cfg[row.ConfigKey] = Number(row.ConfigValue); });
+                configRef.current = cfg;
+                setItems(prev => { calculateState(prev); return prev; });
+            }
+        };
+        loadConfig();
+    }, []);
 
     // Load people
     useEffect(() => {
@@ -56,7 +72,7 @@ export function useShoppingSession() {
             acc[key] = (acc[key] || 0) + 1;
             return acc;
         }, { vegetable: 0, fruit: 0, other: 0 });
-        setKitty(INITIAL_KITTY - totalCost);
+        setKitty(configRef.current.initial_kitty - totalCost);
         setCounts(newCounts);
     };
 
@@ -179,8 +195,8 @@ export function useShoppingSession() {
         setItems([]);
 
         try {
-            await addItemToShop(newShopId, 'Parking', 'other', 2);
-            await addItemToShop(newShopId, 'Trolley', 'other', 5);
+            await addItemToShop(newShopId, 'Parking', 'other', configRef.current.parking_cost);
+            await addItemToShop(newShopId, 'Trolley', 'other', configRef.current.trolley_cost);
         } catch (e) {
             console.error('Error adding default items:', e);
         }
@@ -226,7 +242,7 @@ export function useShoppingSession() {
         shopIdRef.current = null;
         setShopId(null);
         setItems([]);
-        setKitty(INITIAL_KITTY);
+        setKitty(configRef.current.initial_kitty);
         setCounts({ vegetable: 0, fruit: 0, other: 0 });
         await AsyncStorage.removeItem(SHOP_ID_KEY);
     };
